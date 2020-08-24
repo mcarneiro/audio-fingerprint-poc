@@ -6,6 +6,8 @@
   "db.file": "db/fingerprints2.db",
 
   "channels": "2",
+
+  "mic.save_recorded": false,
   "mic.visualise_console": true,
   "mic.visualise_plot": false,
 

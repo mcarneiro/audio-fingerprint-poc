@@ -1,5 +1,8 @@
 numpy>=1
+scipy
+matplotlib
 termcolor
 pyaudio
 wave
 pydub
+autopep8

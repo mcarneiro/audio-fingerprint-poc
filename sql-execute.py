@@ -6,9 +6,9 @@ from libs.db_sqlite import SqliteDatabase
 from termcolor import colored
 from argparse import RawTextHelpFormatter
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(formatter_class=RawTextHelpFormatter)
-    parser.add_argument('-q', '--query', nargs='?')
+    parser.add_argument("-q", "--query", nargs="?")
     args = parser.parse_args()
 
     if not args.query:

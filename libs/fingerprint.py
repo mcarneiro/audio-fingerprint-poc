@@ -6,7 +6,10 @@ import matplotlib.pyplot as plt
 from termcolor import colored
 from scipy.ndimage.filters import maximum_filter
 from scipy.ndimage.morphology import (
-    generate_binary_structure, iterate_structure, binary_erosion)
+    generate_binary_structure,
+    iterate_structure,
+    binary_erosion,
+)
 from operator import itemgetter
 
 IDX_FREQ_I = 0
@@ -55,19 +58,23 @@ PEAK_SORT = True
 FINGERPRINT_REDUCTION = 20
 
 
-def fingerprint(channel_samples, Fs=DEFAULT_FS,
-                wsize=DEFAULT_WINDOW_SIZE,
-                wratio=DEFAULT_OVERLAP_RATIO,
-                fan_value=DEFAULT_FAN_VALUE,
-                amp_min=DEFAULT_AMP_MIN,
-                plots=False):
+def fingerprint(
+    channel_samples,
+    Fs=DEFAULT_FS,
+    wsize=DEFAULT_WINDOW_SIZE,
+    wratio=DEFAULT_OVERLAP_RATIO,
+    fan_value=DEFAULT_FAN_VALUE,
+    amp_min=DEFAULT_AMP_MIN,
+    plots=False,
+    print_output=True,
+):
 
     # show samples plot
     if plots:
         plt.plot(channel_samples)
-        plt.title('%d samples' % len(channel_samples))
-        plt.xlabel('time (s)')
-        plt.ylabel('amplitude (A)')
+        plt.title("%d samples" % len(channel_samples))
+        plt.xlabel("time (s)")
+        plt.ylabel("amplitude (A)")
         plt.show()
         plt.gca().invert_yaxis()
 
@@ -81,24 +88,28 @@ def fingerprint(channel_samples, Fs=DEFAULT_FS,
         NFFT=wsize,
         Fs=Fs,
         window=mlab.window_hanning,
-        noverlap=int(wsize * wratio))[0]
+        noverlap=int(wsize * wratio),
+    )[0]
 
     # show spectrogram plot
     if plots:
         plt.plot(arr2D)
-        plt.title('FFT')
+        plt.title("FFT")
         plt.show()
 
     # apply log transform since specgram() returns linear array
     # calculates the base 10 logarithm for all elements of arr2D
+    np.seterr(divide="ignore")
     arr2D = 10 * np.log10(arr2D)
+    np.seterr(divide="warn")
     arr2D[arr2D == -np.inf] = 0  # replace infs with zeros
 
     # find local maxima
     local_maxima = get_2D_peaks(arr2D, plot=plots, amp_min=amp_min)
 
-    msg = '   local_maxima: %d of frequency & time pairs'
-    print(colored(msg, attrs=['dark']) % len(local_maxima))
+    if print_output:
+        msg = "   local_maxima: %d of frequency & time pairs"
+        print(colored(msg, attrs=["dark"]) % len(local_maxima))
 
     # return hashes
     return generate_hashes(local_maxima, fan_value=fan_value)
@@ -111,9 +122,10 @@ def get_2D_peaks(arr2D, plot=False, amp_min=DEFAULT_AMP_MIN):
 
     # find local maxima using our fliter shape
     local_max = maximum_filter(arr2D, footprint=neighborhood) == arr2D
-    background = (arr2D == 0)
-    eroded_background = binary_erosion(background, structure=neighborhood,
-                                       border_value=1)
+    background = arr2D == 0
+    eroded_background = binary_erosion(
+        background, structure=neighborhood, border_value=1
+    )
 
     # Boolean mask of arr2D with True at peaks
     detected_peaks = local_max ^ eroded_background
@@ -124,7 +136,7 @@ def get_2D_peaks(arr2D, plot=False, amp_min=DEFAULT_AMP_MIN):
 
     # filter peaks
     amps = amps.flatten()
-    peaks = zip(i, j, amps)
+    peaks = list(zip(i, j, amps))
     peaks_filtered = [x for x in peaks if x[2] > amp_min]  # freq, time, amp
 
     # get indices for frequency and time
@@ -136,13 +148,14 @@ def get_2D_peaks(arr2D, plot=False, amp_min=DEFAULT_AMP_MIN):
         fig, ax = plt.subplots()
         ax.imshow(arr2D)
         ax.scatter(time_idx, frequency_idx)
-        ax.set_xlabel('Time')
-        ax.set_ylabel('Frequency')
+        ax.set_xlabel("Time")
+        ax.set_ylabel("Frequency")
         ax.set_title("Spectrogram")
         plt.gca().invert_yaxis()
         plt.show()
 
-    return zip(frequency_idx, time_idx)
+    return list(zip(frequency_idx, time_idx))
+
 
 # Hash list structure: sha1_hash[0:20] time_offset
 # example: [(e05b341a9b77a51fd26, 32), ... ]
@@ -169,7 +182,13 @@ def generate_hashes(peaks, fan_value=DEFAULT_FAN_VALUE):
                 t_delta = t2 - t1
 
                 # check if delta is between min & max
-                if t_delta >= MIN_HASH_TIME_DELTA and t_delta <= MAX_HASH_TIME_DELTA:
-                    h = hashlib.sha1("%s|%s|%s" %
-                                     (str(freq1), str(freq2), str(t_delta)))
+                if (
+                    t_delta >= MIN_HASH_TIME_DELTA
+                    and t_delta <= MAX_HASH_TIME_DELTA
+                ):
+                    h = hashlib.sha1(
+                        (
+                            "%s|%s|%s" % (str(freq1), str(freq2), str(t_delta))
+                        ).encode()
+                    )
                     yield (h.hexdigest()[0:FINGERPRINT_REDUCTION], t1)

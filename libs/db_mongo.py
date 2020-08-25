@@ -10,8 +10,8 @@ class MongoDatabase(Database):
     def connect(self):
         config = get_config()
 
-        self.client = MongoClient(config['db.dsn'])
-        self.db = self.client[config['db.database']]
+        self.client = MongoClient(config["db.dsn"])
+        self.db = self.client[config["db.database"]]
 
     def insert(self, collection, document):
         # if not self.db:

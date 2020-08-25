@@ -5,4 +5,5 @@ termcolor
 pyaudio
 wave
 pydub
-autopep8
+black
+flake8

@@ -32,16 +32,16 @@ class FileReader(object):
             audiofile = AudioSegment.from_file(self.filename)
 
             if limit:
-                audiofile = audiofile[:limit * 1000]
+                audiofile = audiofile[: limit * 1000]
 
             data = np.fromstring(audiofile._data, np.int16)
 
             channels = []
             for chn in range(audiofile.channels):
-                channels.append(data[chn::audiofile.channels])
+                channels.append(data[chn :: audiofile.channels])
 
         except audioop.error:
-            print('audioop.error')
+            print("audioop.error")
             pass
 
         return {
@@ -49,10 +49,10 @@ class FileReader(object):
             "extension": extension,
             "channels": channels,
             "Fs": audiofile.frame_rate,
-            "file_hash": self.parse_file_hash()
+            "file_hash": self.parse_file_hash(),
         }
 
-    def parse_file_hash(self, blocksize=2**20):
+    def parse_file_hash(self, blocksize=2 ** 20):
         """ Small function to generate a hash to uniquely generate
         a file. Inspired by MD5 version here:
         http://stackoverflow.com/a/1131255/712997

@@ -20,10 +20,13 @@ class MicrophoneReader(object):
         self.rate = MicrophoneReader.default_rate
         self.recorded = False
 
-    def start_recording(self, channels=default_channels,
-                        rate=default_rate,
-                        chunksize=default_chunksize,
-                        seconds=default_seconds):
+    def start_recording(
+        self,
+        channels=default_channels,
+        rate=default_rate,
+        chunksize=default_chunksize,
+        seconds=default_seconds,
+    ):
         self.chunksize = chunksize
         self.channels = channels
         self.recorded = False
@@ -51,7 +54,7 @@ class MicrophoneReader(object):
         nums = numpy.fromstring(data, numpy.int16)
 
         for c in range(self.channels):
-            self.data[c].extend(nums[c::self.channels])
+            self.data[c].extend(nums[c :: self.channels])
 
         return nums
 
@@ -65,7 +68,7 @@ class MicrophoneReader(object):
         return self.data
 
     def save_recorded(self, output_filename):
-        wf = wave.open(output_filename, 'wb')
+        wf = wave.open(output_filename, "wb")
         wf.setnchannels(self.channels)
         wf.setsampwidth(self.audio.get_sample_size(self.default_format))
         wf.setframerate(self.rate)

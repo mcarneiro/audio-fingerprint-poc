@@ -1,72 +1,75 @@
 #!/usr/bin/python3
 import os
 import sys
-import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from threading import Thread
 from pathlib import Path
 from termcolor import colored
 
-import libs.fingerprint as fingerprint
 from libs.reader_file import FileReader
 from libs.db_sqlite import SqliteDatabase
-from libs.utils import find_matches, align_matches, grouper, print_match_results
+from libs.utils import find_matches, print_match_results
 
 
-def run_recognition(filename):
+def run_recognition(filename, print_output=True):
     db = SqliteDatabase()
-    r = FileReader(os.path.abspath(filename))
 
+    r = FileReader(os.path.abspath(filename))
     data = r.parse_audio()
-    Fs = data['Fs']
-    channel_amount = len(data['channels'])
+
+    Fs = data["Fs"]
+    channel_amount = len(data["channels"])
     matches = []
 
-    for channeln, channel in enumerate(data['channels']):
+    for channeln, channel in enumerate(data["channels"]):
         # TODO: Remove prints or change them into optional logging.
-        msg = '   fingerprinting channel %d/%d'
-        print(colored(msg, attrs=['dark']) % (channeln+1, channel_amount))
+        if print_output:
+            msg = "   fingerprinting channel %d/%d"
+            print(
+                colored(msg, attrs=["dark"]) % (channeln + 1, channel_amount)
+            )
 
-        matches.extend(find_matches(db, channel, Fs))
+        matches.extend(find_matches(db, channel, Fs, print_output))
 
-        msg = '   finished channel %d/%d, got %d hashes'
-        print(colored(msg, attrs=['dark']) % (
-            channeln+1, channel_amount, len(matches)
-        ))
+        if print_output:
+            msg = "   finished channel %d/%d, got %d hashes"
+            print(
+                colored(msg, attrs=["dark"])
+                % (channeln + 1, channel_amount, len(matches))
+            )
 
     print_match_results(db, matches)
 
 
 def run_recognition_scan_dir(dirname):
-    pathlist = Path(os.path.abspath(dirname)).glob('**/*.mp3')
+    pathlist = Path(os.path.abspath(dirname)).glob("**/*.mp3")
 
-    with ThreadPoolExecutor(max_workers=3) as executor:
+    with ThreadPoolExecutor(max_workers=4) as executor:
         futures = []
 
         for path in pathlist:
-            futures.append(executor.submit(run_recognition, str(path)))
+            futures.append(executor.submit(run_recognition, str(path), False))
 
         for future in as_completed(futures):
-            print(future.result())
+            future.result()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     args = sys.argv[1:]
 
     filename = None
     scan_dir = False
-    if (len(args) > 0 and (args[0] == '--dir' or args[0] == '--dirname')):
+    if len(args) > 0 and (args[0] == "--dir" or args[0] == "--dirname"):
         scan_dir = True
 
-        if (len(args) > 1):
+        if len(args) > 1:
             filename = args[1]
         else:
-            print('Must supply a directory name to scan')
+            print("Must supply a directory name to scan")
             sys.exit(1)
-    elif (len(args) > 0):
+    elif len(args) > 0:
         filename = args[0]
     else:
-        print('Must supply a file name to match')
+        print("Must supply a file name to match")
         sys.exit(1)
 
     if scan_dir is True:

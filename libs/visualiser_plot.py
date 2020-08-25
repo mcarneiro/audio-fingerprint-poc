@@ -1,7 +1,7 @@
 from matplotlib import pyplot
 
 
-class VisualiserPlot():
+class VisualiserPlot:
     def __init__(self):
         pass
 

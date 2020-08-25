@@ -4,6 +4,15 @@ from termcolor import colored
 import libs.fingerprint as fingerprint
 
 
+def logmsg(msg, color=None, attrs=[], prefix=None):
+    if prefix is not None:
+        prefix = "[ %s ] " % prefix[:40]  # Only print up to 40 chars
+        if len(prefix) < 40:
+            prefix += ''.join([' ' for x in range(40 - len(prefix))])
+        msg = '\n'.join([(prefix + x) for x in msg.split('\n')])
+    return colored(msg, color=color, attrs=attrs)
+
+
 def grouper(iterable, n, fillvalue=None):
     args = [iter(iterable)] * n
     return (
@@ -12,7 +21,7 @@ def grouper(iterable, n, fillvalue=None):
     )
 
 
-def return_matches(db, hashes, print_output=True):
+def return_matches(db, hashes, filename=None, print_output=True):
     mapper = {}
     for hash, offset in hashes:
         mapper[hash.upper()] = offset
@@ -28,7 +37,7 @@ def return_matches(db, hashes, print_output=True):
             SELECT upper(hash), song_fk, offset
             FROM fingerprints
             WHERE upper(hash) IN (%s)
-            """
+        """
         query = query % ", ".join("?" * len(split_values))
 
         x = db.executeAll(query, split_values)
@@ -37,10 +46,16 @@ def return_matches(db, hashes, print_output=True):
         if print_output:
             if matches_found > 0:
                 msg = "   ** found %d hash matches (step %d/%d)"
-                print(colored(msg, "green") % (matches_found, step, steps))
+                print(
+                    logmsg(msg, "green", prefix=filename)
+                    % (matches_found, step, steps)
+                )
             else:
                 msg = "   ** no matches found (step %d/%d)"
-                print(colored(msg, "red") % (step, steps))
+                print(
+                    logmsg(msg, "red", prefix=filename)
+                    % (step, steps)
+                )
 
         step += 1
 
@@ -48,9 +63,13 @@ def return_matches(db, hashes, print_output=True):
             yield (sid, int.from_bytes(offset, "little") - mapper[hash])
 
 
-def find_matches(db, samples, Fs=fingerprint.DEFAULT_FS, print_output=True):
-    hashes = fingerprint.fingerprint(samples, Fs=Fs, print_output=print_output)
-    return return_matches(db, hashes, print_output)
+def find_matches(
+    db, samples, Fs=fingerprint.DEFAULT_FS, filename=None, print_output=True
+):
+    hashes = fingerprint.fingerprint(
+        samples, Fs=Fs, print_output=False  # Force omit prints here
+    )
+    return return_matches(db, hashes, filename, print_output)
 
 
 def align_matches(db, matches):
@@ -94,22 +113,28 @@ def align_matches(db, matches):
     }
 
 
-def print_match_results(db, matches):
-    print("")
+def print_match_results(db, matches, filename=None):
+    print(logmsg("", "green", prefix=filename))
     total_matches_found = len(matches)
 
     if total_matches_found > 0:
         msg = " ** found %d total hash matches"
-        print(colored(msg, "green") % total_matches_found)
+        print(
+            logmsg(msg, "green", prefix=filename)
+            % total_matches_found
+        )
 
         song = align_matches(db, matches)
 
         msg = " => song: %s (id=%d)\n"
         msg += "    offset: %d (%d secs)\n"
-        msg += "    confidence: %d"
+        msg += "    confidence: %d\n"
+
+        if song["CONFIDENCE"] >= 100:
+            msg += "    POSSIBLE MATCH FOUND!"
 
         print(
-            colored(msg, "green")
+            logmsg(msg, "green", prefix=filename)
             % (
                 song["SONG_NAME"],
                 song["SONG_ID"],
@@ -120,4 +145,4 @@ def print_match_results(db, matches):
         )
     else:
         msg = " ** no matches found"
-        print(colored(msg, "red"))
+        print(logmsg(msg, "red", prefix=filename))

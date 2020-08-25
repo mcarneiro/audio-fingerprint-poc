@@ -3,17 +3,19 @@ import os
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from termcolor import colored
 
 from libs.reader_file import FileReader
 from libs.db_sqlite import SqliteDatabase
-from libs.utils import find_matches, print_match_results
+from libs.utils import logmsg, find_matches, print_match_results
 
 
 def run_recognition(filename, print_output=True):
     db = SqliteDatabase()
 
-    r = FileReader(os.path.abspath(filename))
+    abs_filename = os.path.abspath(filename)
+    filename = abs_filename.rsplit(os.sep)[-1]
+
+    r = FileReader(abs_filename)
     data = r.parse_audio()
 
     Fs = data["Fs"]
@@ -25,19 +27,20 @@ def run_recognition(filename, print_output=True):
         if print_output:
             msg = "   fingerprinting channel %d/%d"
             print(
-                colored(msg, attrs=["dark"]) % (channeln + 1, channel_amount)
+                logmsg(msg, attrs=["dark"], prefix=filename)
+                % (channeln + 1, channel_amount)
             )
 
-        matches.extend(find_matches(db, channel, Fs, print_output))
+        matches.extend(find_matches(db, channel, Fs, filename, print_output))
 
         if print_output:
             msg = "   finished channel %d/%d, got %d hashes"
             print(
-                colored(msg, attrs=["dark"])
+                logmsg(msg, attrs=["dark"], prefix=filename)
                 % (channeln + 1, channel_amount, len(matches))
             )
 
-    print_match_results(db, matches)
+    print_match_results(db, matches, filename)
 
 
 def run_recognition_scan_dir(dirname):
@@ -47,7 +50,7 @@ def run_recognition_scan_dir(dirname):
         futures = []
 
         for path in pathlist:
-            futures.append(executor.submit(run_recognition, str(path), False))
+            futures.append(executor.submit(run_recognition, str(path), True))
 
         for future in as_completed(futures):
             future.result()

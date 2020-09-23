@@ -19,10 +19,10 @@ fingerprint-songs: clean
 	@python collect-fingerprints-of-songs.py
 
 recognize-listen: clean
-	@python recognize-from-microphone.py -s $(seconds)
+	@python recognize_from_microphone.py -s $(seconds)
 
 recognize-file: clean
-	@python recognize-from-file.py $(file)
+	@python recognize_from_file.py $(file)
 
 recognize-dir: clean
-	@python recognize-from-file.py --dir $(dir)
+	@python recognize_from_file.py --dir $(dir)

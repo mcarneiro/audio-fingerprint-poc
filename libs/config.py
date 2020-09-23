@@ -4,12 +4,18 @@ import os.path
 CONFIG_DEFAULT_FILE = "config.json"
 CONFIG_DEVELOPMENT_FILE = "config-development.json"
 
-# load config from multiple files,
-# and return merged result
-
 
 def get_config():
-    defaultConfig = {"env": "unknown"}
+    """
+    Load config from multiple files and return merged result.
+    """
+    defaultConfig = {
+        "env": "unset",
+        "log.level": "INFO",
+        "log.file": "recognition.log",
+        "log.format": "%(asctime)s %(processName)-10s %(message)s",
+        "log.max_size": "1000000",
+    }
 
     return merge_configs(
         defaultConfig,
@@ -18,11 +24,11 @@ def get_config():
     )
 
 
-# parse config from specific filename
-# will return empty config if file not exists, or isn't readable
-
-
 def parse_config(filename):
+    """
+    Parse config from specific filename.
+    Will return empty config if the file does not exist, or isn't readable.
+    """
     config = {}
 
     if os.path.isfile(filename):
@@ -33,10 +39,10 @@ def parse_config(filename):
     return config
 
 
-# @merge multiple dicts into one
-
-
 def merge_configs(*configs):
+    """
+    Merge multiple dicts into one.
+    """
     z = {}
 
     for config in configs:

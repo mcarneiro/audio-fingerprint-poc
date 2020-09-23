@@ -1,6 +1,14 @@
 {
   "env": "default",
 
+  "log.console_out": true,
+  "log.file_out": true,
+
+  "log.level": "INFO",
+  "log.file": "rec.log",
+  "log.format": "%(message)s",
+  "log.max_size": "1000000",
+
   "db.dsn": null,
   "db.database": null,
   "db.file": "db/fingerprints2.db",

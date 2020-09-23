@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
 
-from termcolor import colored
+# from termcolor import colored
 from scipy.ndimage.filters import maximum_filter
 from scipy.ndimage.morphology import (
     generate_binary_structure,
@@ -65,8 +65,7 @@ def fingerprint(
     wratio=DEFAULT_OVERLAP_RATIO,
     fan_value=DEFAULT_FAN_VALUE,
     amp_min=DEFAULT_AMP_MIN,
-    plots=False,
-    print_output=True,
+    plots=False
 ):
 
     # show samples plot
@@ -107,9 +106,8 @@ def fingerprint(
     # find local maxima
     local_maxima = get_2D_peaks(arr2D, plot=plots, amp_min=amp_min)
 
-    if print_output:
-        msg = "   local_maxima: %d of frequency & time pairs"
-        print(colored(msg, attrs=["dark"]) % len(local_maxima))
+    # msg = "   local_maxima: %d of frequency & time pairs"
+    # print(colored(msg, attrs=["dark"]) % len(local_maxima))
 
     # return hashes
     return generate_hashes(local_maxima, fan_value=fan_value)

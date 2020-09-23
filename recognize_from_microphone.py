@@ -1,10 +1,11 @@
 #!/usr/bin/python3
 import sys
-import libs.fingerprint as fingerprint
+import logging
 import argparse
-
 from argparse import RawTextHelpFormatter
 from termcolor import colored
+
+import libs.fingerprint as fingerprint
 from libs.config import get_config
 from libs.reader_microphone import MicrophoneReader
 from libs.visualiser_console import VisualiserConsole as visual_peak
@@ -17,6 +18,19 @@ from libs.utils import find_matches, print_match_results
 
 def run_recognition():
     config = get_config()
+
+    # Set up logging
+    handlers = []
+    if bool(config["log.console_out"]):
+        handlers.append(logging.StreamHandler())
+    if bool(config["log.file_out"]):
+        handlers.append(logging.FileHandler("microphone_rec.log"))
+
+    logger = logging.basicConfig(
+        handlers=handlers,
+        format=config["log.format"],
+        level=config["log.level"]
+    )
 
     db = SqliteDatabase()
 
@@ -31,7 +45,7 @@ def run_recognition():
     seconds = int(args.seconds)
 
     chunksize = 2 ** 12  # 4096
-    channels = 2  # int(config['channels']) # 1=mono, 2=stereo
+    channels = int(config["channels"])  # 1=mono, 2=stereo
 
     record_forever = False
     save_recorded = bool(config["mic.save_recorded"])
@@ -45,7 +59,8 @@ def run_recognition():
     )
 
     msg = " * started recording.."
-    print(colored(msg, attrs=["dark"]))
+    logger.info(msg)
+    # print(colored(msg, attrs=["dark"]))
 
     while True:
         bufferSize = int(reader.rate / reader.chunksize * seconds)
@@ -57,10 +72,12 @@ def run_recognition():
                 msg = colored("   %05d", attrs=["dark"]) + colored(
                     " %s", "green"
                 )
-                print(msg % visual_peak.calc(nums))
+                logger.info(msg, visual_peak.calc(nums))
+                # print(msg % visual_peak.calc(nums))
             else:
                 msg = "   processing %d of %d.." % (i, bufferSize)
-                print(colored(msg, attrs=["dark"]))
+                logger.info(msg)
+                # print(colored(msg, attrs=["dark"]))
 
         if not record_forever:
             break
@@ -72,12 +89,14 @@ def run_recognition():
     reader.stop_recording()
 
     msg = " * recording has been stopped"
-    print(colored(msg, attrs=["dark"]))
+    logger.info(msg)
+    # print(colored(msg, attrs=["dark"]))
 
     data = reader.get_recorded_data()
 
     msg = " * recorded %d samples"
-    print(colored(msg, attrs=["dark"]) % len(data[0]))
+    logger.info(msg, len(data[0]))
+    # print(colored(msg, attrs=["dark"]) % len(data[0]))
 
     if save_recorded:
         reader.save_recorded("test.wav")
@@ -87,19 +106,20 @@ def run_recognition():
     matches = []
 
     for channeln, channel in enumerate(data):
-        # TODO: Remove prints or change them into optional logging.
         msg = "   fingerprinting channel %d/%d"
-        print(colored(msg, attrs=["dark"]) % (channeln + 1, channel_amount))
+        logger.info(msg, channeln + 1, channel_amount)
+        # print(colored(msg, attrs=["dark"]) % (channeln + 1, channel_amount))
 
-        matches.extend(find_matches(db, channel, Fs))
+        matches.extend(find_matches(db, channel, logger, Fs))
 
         msg = "   finished channel %d/%d, got %d hashes"
-        print(
-            colored(msg, attrs=["dark"])
-            % (channeln + 1, channel_amount, len(matches))
-        )
+        logger.info(msg, channeln + 1, channel_amount, len(matches))
+        # print(
+        #     colored(msg, attrs=["dark"])
+        #     % (channeln + 1, channel_amount, len(matches))
+        # )
 
-    print_match_results(db, matches)
+    print_match_results(db, matches, logger)
 
 
 if __name__ == "__main__":

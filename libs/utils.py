@@ -1,16 +1,21 @@
 import math
 from itertools import zip_longest
-from termcolor import colored
+# from termcolor import colored
 import libs.fingerprint as fingerprint
 
 
 def logmsg(msg, color=None, attrs=[], prefix=None):
+    maxlen = 40  # Only print up to 40 chars
+
     if prefix is not None:
-        prefix = "[ %s ] " % prefix[:40]  # Only print up to 40 chars
-        if len(prefix) < 40:
-            prefix += ''.join([' ' for x in range(40 - len(prefix))])
+        prefix = "[ %s ] " % prefix[:maxlen]
+        if len(prefix) < maxlen:
+            prefix += ''.join([' ' for x in range(maxlen - len(prefix))])
         msg = '\n'.join([(prefix + x) for x in msg.split('\n')])
-    return colored(msg, color=color, attrs=attrs)
+
+    # Return uncolored message for logging purposes
+    # return colored(msg, color=color, attrs=attrs)
+    return msg
 
 
 def grouper(iterable, n, fillvalue=None):
@@ -21,7 +26,7 @@ def grouper(iterable, n, fillvalue=None):
     )
 
 
-def return_matches(db, hashes, filename=None, print_output=True):
+def return_matches(db, hashes, logger=None, filename=None):
     mapper = {}
     for hash, offset in hashes:
         mapper[hash.upper()] = offset
@@ -43,18 +48,21 @@ def return_matches(db, hashes, filename=None, print_output=True):
         x = db.executeAll(query, split_values)
         matches_found = len(x)
 
-        if print_output:
+        if logger:
             if matches_found > 0:
                 msg = "   ** found %d hash matches (step %d/%d)"
-                print(
-                    logmsg(msg, "green", prefix=filename)
-                    % (matches_found, step, steps)
+                logger.debug(
+                    logmsg(msg, "green", prefix=filename),
+                    matches_found,
+                    step,
+                    steps
                 )
             else:
                 msg = "   ** no matches found (step %d/%d)"
-                print(
-                    logmsg(msg, "red", prefix=filename)
-                    % (step, steps)
+                logger.debug(
+                    logmsg(msg, "red", prefix=filename),
+                    step,
+                    steps,
                 )
 
         step += 1
@@ -64,12 +72,10 @@ def return_matches(db, hashes, filename=None, print_output=True):
 
 
 def find_matches(
-    db, samples, Fs=fingerprint.DEFAULT_FS, filename=None, print_output=True
+    db, samples, logger, Fs=fingerprint.DEFAULT_FS, filename=None
 ):
-    hashes = fingerprint.fingerprint(
-        samples, Fs=Fs, print_output=False  # Force omit prints here
-    )
-    return return_matches(db, hashes, filename, print_output)
+    hashes = fingerprint.fingerprint(samples, Fs=Fs)
+    return return_matches(db, hashes, logger, filename)
 
 
 def align_matches(db, matches):
@@ -113,15 +119,15 @@ def align_matches(db, matches):
     }
 
 
-def print_match_results(db, matches, filename=None):
-    print(logmsg("", "green", prefix=filename))
+def print_match_results(db, matches, logger, filename=None):
+    logger.info(logmsg("", "green", prefix=filename))
     total_matches_found = len(matches)
 
     if total_matches_found > 0:
         msg = " ** found %d total hash matches"
-        print(
-            logmsg(msg, "green", prefix=filename)
-            % total_matches_found
+        logger.info(
+            logmsg(msg, "green", prefix=filename),
+            total_matches_found
         )
 
         song = align_matches(db, matches)
@@ -130,19 +136,14 @@ def print_match_results(db, matches, filename=None):
         msg += "    offset: %d (%d secs)\n"
         msg += "    confidence: %d\n"
 
-        if song["CONFIDENCE"] >= 100:
-            msg += "    POSSIBLE MATCH FOUND!"
-
-        print(
-            logmsg(msg, "green", prefix=filename)
-            % (
-                song["SONG_NAME"],
-                song["SONG_ID"],
-                song["OFFSET"],
-                song["OFFSET_SECS"],
-                song["CONFIDENCE"],
-            )
+        logger.info(
+            logmsg(msg, "green", prefix=filename),
+            song["SONG_NAME"],
+            song["SONG_ID"],
+            song["OFFSET"],
+            song["OFFSET_SECS"],
+            song["CONFIDENCE"]
         )
     else:
         msg = " ** no matches found"
-        print(logmsg(msg, "red", prefix=filename))
+        logger.info(logmsg(msg, "red", prefix=filename))

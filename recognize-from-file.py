@@ -43,17 +43,26 @@ def run_recognition(filename, print_output=True):
     print_match_results(db, matches, filename)
 
 
-def run_recognition_scan_dir(dirname):
+def run_recognition_scan_dir(dirname, threaded=False):
     pathlist = Path(os.path.abspath(dirname)).glob("**/*.mp3")
 
-    with ThreadPoolExecutor(max_workers=4) as executor:
-        futures = []
-
+    if not threaded:
+        # 1. Sequential execution
         for path in pathlist:
-            futures.append(executor.submit(run_recognition, str(path), True))
+            run_recognition(str(path), True)
+    else:
+        # 2. Threaded execution. No improvement in speed,
+        # but will scan multiple files at once
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            futures = []
 
-        for future in as_completed(futures):
-            future.result()
+            for path in pathlist:
+                futures.append(
+                    executor.submit(run_recognition, str(path), True)
+                )
+
+            for future in as_completed(futures):
+                future.result()
 
 
 if __name__ == "__main__":
@@ -61,6 +70,8 @@ if __name__ == "__main__":
 
     filename = None
     scan_dir = False
+    threaded = False  # Set to True if threaded execution desired
+
     if len(args) > 0 and (args[0] == "--dir" or args[0] == "--dirname"):
         scan_dir = True
 
@@ -76,6 +87,6 @@ if __name__ == "__main__":
         sys.exit(1)
 
     if scan_dir is True:
-        run_recognition_scan_dir(filename)
+        run_recognition_scan_dir(filename, threaded)
     else:
         run_recognition(filename)

@@ -11,7 +11,13 @@
 1. Run `$ make tests` to make sure that everything is properly configured
 1. Copy some `.mp3` audio files into `mp3/` directory
 1. Run `$ make fingerprint-songs` to analyze audio files & fill your db with hashes
-1. Start play any of audio file (from any source) from `mp3/` directory, and run (parallely) `$ make recognize-listen seconds=5`
+1. Start playing any audio file (from any source) from `mp3/` directory, and run (parallely) `$ make recognize-listen seconds=5`
+
+## Scanning files
+
+* Follow steps 1-4 from the guide above
+* To identify audio from a file, instead run `$ make recognize-file file=unknown-audio.mp3`
+* To identify audio from multiple files, run `$ make recognize-dir dir=unknown-audio-dir`
 
 ![](http://new.tinygrab.com/7020c0e8b0393eec4a18c62170458c029577d378c2.png)
 

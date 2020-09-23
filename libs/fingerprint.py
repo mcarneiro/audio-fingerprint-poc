@@ -65,7 +65,7 @@ def fingerprint(
     wratio=DEFAULT_OVERLAP_RATIO,
     fan_value=DEFAULT_FAN_VALUE,
     amp_min=DEFAULT_AMP_MIN,
-    plots=False
+    plots=False,
 ):
 
     # show samples plot

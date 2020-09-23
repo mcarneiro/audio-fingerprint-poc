@@ -81,8 +81,7 @@ def worker_process(filepath, queue, configurer):
         run_recognition(filepath, logger)
     except KeyboardInterrupt:
         print(
-            'Received keyboard interrupt, '
-            'stopping recognition processes...'
+            "Received keyboard interrupt, stopping recognition processes..."
         )
 
 

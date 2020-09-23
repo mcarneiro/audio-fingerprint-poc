@@ -29,7 +29,7 @@ def run_recognition():
     logger = logging.basicConfig(
         handlers=handlers,
         format=config["log.format"],
-        level=config["log.level"]
+        level=config["log.level"],
     )
 
     db = SqliteDatabase()

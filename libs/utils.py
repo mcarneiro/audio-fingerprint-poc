@@ -1,5 +1,6 @@
 import math
 from itertools import zip_longest
+
 # from termcolor import colored
 import libs.fingerprint as fingerprint
 
@@ -10,8 +11,8 @@ def logmsg(msg, color=None, attrs=[], prefix=None):
     if prefix is not None:
         prefix = "[ %s ] " % prefix[:maxlen]
         if len(prefix) < maxlen:
-            prefix += ''.join([' ' for x in range(maxlen - len(prefix))])
-        msg = '\n'.join([(prefix + x) for x in msg.split('\n')])
+            prefix += "".join([" " for x in range(maxlen - len(prefix))])
+        msg = "\n".join([(prefix + x) for x in msg.split("\n")])
 
     # Return uncolored message for logging purposes
     # return colored(msg, color=color, attrs=attrs)
@@ -55,14 +56,12 @@ def return_matches(db, hashes, logger=None, filename=None):
                     logmsg(msg, "green", prefix=filename),
                     matches_found,
                     step,
-                    steps
+                    steps,
                 )
             else:
                 msg = "   ** no matches found (step %d/%d)"
                 logger.debug(
-                    logmsg(msg, "red", prefix=filename),
-                    step,
-                    steps,
+                    logmsg(msg, "red", prefix=filename), step, steps,
                 )
 
         step += 1
@@ -125,10 +124,7 @@ def print_match_results(db, matches, logger, filename=None):
 
     if total_matches_found > 0:
         msg = " ** found %d total hash matches"
-        logger.info(
-            logmsg(msg, "green", prefix=filename),
-            total_matches_found
-        )
+        logger.info(logmsg(msg, "green", prefix=filename), total_matches_found)
 
         song = align_matches(db, matches)
 
@@ -142,7 +138,7 @@ def print_match_results(db, matches, logger, filename=None):
             song["SONG_ID"],
             song["OFFSET"],
             song["OFFSET_SECS"],
-            song["CONFIDENCE"]
+            song["CONFIDENCE"],
         )
     else:
         msg = " ** no matches found"

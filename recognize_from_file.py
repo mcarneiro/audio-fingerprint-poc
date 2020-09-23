@@ -27,7 +27,7 @@ def run_recognition(filename, logger):
         logger.info(
             logmsg(msg, attrs=["dark"], prefix=filename),
             channeln + 1,
-            channel_amount
+            channel_amount,
         )
 
         matches.extend(find_matches(db, channel, logger, Fs, filename))
@@ -37,7 +37,7 @@ def run_recognition(filename, logger):
             logmsg(msg, attrs=["dark"], prefix=filename),
             channeln + 1,
             channel_amount,
-            len(matches)
+            len(matches),
         )
 
     print_match_results(db, matches, logger, filename)
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     logger = logging.basicConfig(
         handlers=handlers,
         format=config["log.format"],
-        level=config["log.level"]
+        level=config["log.level"],
     )
 
     # Run recognition

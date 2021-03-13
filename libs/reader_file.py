@@ -28,17 +28,24 @@ class FileReader(object):
 
         songname, extension = os.path.splitext(os.path.basename(self.filename))
 
+        print('splittext', songname)
+
         try:
+            print('inside try', self.filename)
             audiofile = AudioSegment.from_file(self.filename)
+            print('get segment')
 
             if limit:
                 audiofile = audiofile[: limit * 1000]
 
+            print('if limit')
             data = np.fromstring(audiofile._data, np.int16)
 
+            print('create channels')
             channels = []
             for chn in range(audiofile.channels):
                 channels.append(data[chn :: audiofile.channels])
+            print('appended')
 
         except audioop.error:
             print("audioop.error")

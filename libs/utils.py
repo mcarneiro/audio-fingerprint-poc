@@ -140,6 +140,8 @@ def print_match_results(db, matches, logger, filename=None):
             song["OFFSET_SECS"],
             song["CONFIDENCE"],
         )
+        return song
     else:
         msg = " ** no matches found"
         logger.info(logmsg(msg, "red", prefix=filename))
+        return {}

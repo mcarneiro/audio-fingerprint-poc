@@ -14,3 +14,8 @@ config-development.json
 
 db/*.db
 db/*.db-journal
+.aws
+input-audios
+python
+venv
+package.zip

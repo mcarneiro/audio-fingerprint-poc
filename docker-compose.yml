@@ -1,0 +1,11 @@
+version: '3.3'
+services:
+  dev:
+    build: .
+    image: shazam-like
+    container_name: shazam-like-dev
+    ports:
+      - '9000:8080'
+    volumes:
+      - .:/app
+    working_dir: /app

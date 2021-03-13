@@ -9,14 +9,17 @@ from libs.db_sqlite import SqliteDatabase
 from libs.utils import logmsg, find_matches, print_match_results
 
 
-def run_recognition(filename, logger):
+def run_recognition(filename, logger = logging):
     db = SqliteDatabase()
 
     abs_filename = os.path.abspath(filename)
     filename = abs_filename.rsplit(os.sep)[-1]
+    print(filename)
 
     r = FileReader(abs_filename)
+    print('read file')
     data = r.parse_audio()
+    print('parse audio')
 
     Fs = data["Fs"]
     channel_amount = len(data["channels"])
@@ -40,7 +43,7 @@ def run_recognition(filename, logger):
             len(matches),
         )
 
-    print_match_results(db, matches, logger, filename)
+    return print_match_results(db, matches, logger, filename)
 
 
 if __name__ == "__main__":
@@ -61,11 +64,11 @@ if __name__ == "__main__":
     if bool(config["log.file_out"]):
         handlers.append(logging.FileHandler(f"{filename}_rec.log"))
 
-    logger = logging.basicConfig(
+    logging.basicConfig(
         handlers=handlers,
         format=config["log.format"],
         level=config["log.level"],
     )
 
     # Run recognition
-    run_recognition(filename, logger)
+    run_recognition(filename, logging)

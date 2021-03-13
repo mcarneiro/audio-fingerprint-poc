@@ -1,35 +1,104 @@
 # Fingerprint audio files & identify what's playing
 
-- conference [PaceMaker: BackEnd-2016 conference](http://www.pacemaker.in.ua/BackEnd-2016/about)
-- slides are on [slideshare.net/rodomansky/ok-shazam-la-lalalaa](http://www.slideshare.net/rodomansky/ok-shazam-la-lalalaa)
+## How to set up this POC
 
-![](http://new.tinygrab.com/7020c0e8b010392da4053fa90ab8e0c8419bded864.png)
+* `docker-compose build`
+* `docker-compose run --rm --entrypoint bash dev`
 
-## How to set up 
+For the first run, this command will create an empty database:
+* `$ python reset-database.py`
 
-1. Run `$ make clean reset` to clean & init database struct
-1. Run `$ make tests` to make sure that everything is properly configured
-1. Copy some `.mp3` audio files into `mp3/` directory
-1. Run `$ make fingerprint-songs` to analyze audio files & fill your db with hashes
-1. Start playing any audio file (from any source) from `mp3/` directory, and run (parallely) `$ make recognize-listen seconds=5`
+Add mp3 files to `./mp3` folder and run the command below to make it available for comparison:
+* `$ python collect-fingerprints-of-songs.py`
 
-## Scanning files
+Get a recorded input sound to compare and run:
+* `$ python recognize_from_file.py [file.mp3]`
 
-* Follow steps 1-4 from the guide above
-* To identify audio from a file, instead run `$ make recognize-file file=unknown-audio.mp3`
-* To identify audio from multiple files, run `$ make recognize-dir dir=unknown-audio-dir`
+To test it locally, just run `docker-compose up` to make the lambda local server running and run:
 
-![](http://new.tinygrab.com/7020c0e8b0393eec4a18c62170458c029577d378c2.png)
+```
+$ curl -X POST "http://localhost:9000/2015-03-31/functions/function/invocations" -d "$(cat test-request.json)"
+```
 
-## How to
-- To remove a specific song & related hash from db
+Where `test-request.json` will have at least:
 
-  ```bash
-  $ python sql-execute.py -q "DELETE FROM songs WHERE id = 6;"
-  $ python sql-execute.py -q "DELETE FROM fingerprints WHERE song_fk = 6;"
-  ```
+```
+{
+  "body": "[mp3 base64]"
+}
+```
+
+You can an example response with base64 of a file by doing:
+
+```
+$ echo "{
+  \"body\": \"$(base64 audio.mp3 | sed ':a;N;$!ba;s/\n//g')\"
+}" > test-request.json
+```
+
+To run it on Lambda, you'll need to rebuild docker image:
+
+```
+$ docker build . -t my-audiofingerprint-poc:latest
+```
+
+Install [aws cli](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html):
+
+```
+$ curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && unzip awscliv2.zip && sudo ./aws/install
+```
+
+Configure it:
+
+```
+$ echo '[default]
+aws_access_key_id = [your access key id]
+aws_secret_access_key = [your secret access key]
+' > ~/.aws/credentials
+```
+
+And follow [these steps](https://aws.amazon.com/fr/blogs/aws/new-for-aws-lambda-container-image-support/) to upload the docker image to ECR, considering yout image name is `my-audiofingerprint-poc`, it's:
+
+```
+$ aws ecr create-repository --repository-name my-audiofingerprint-poc --image-scanning-configuration scanOnPush=true
+```
+
+It'll return something like:
+
+```
+{
+    "repository": {
+        "repositoryArn": "arn:aws:ecr:us-east-1:1234567890:repository/my-audiofingerprint-poc",
+        "registryId": "1234567890",
+        "repositoryName": "my-audiofingerprint-poc",
+        "repositoryUri": "1234567890.dkr.ecr.us-east-1.amazonaws.com/my-audiofingerprint-poc",
+        "createdAt": "2021-03-13T01:31:38-03:00",
+        "imageTagMutability": "MUTABLE",
+        "imageScanningConfiguration": {
+            "scanOnPush": true
+        },
+        "encryptionConfiguration": {
+            "encryptionType": "AES256"
+        }
+    }
+}
+```
+
+Then you tag your container and push it to ECR:
+
+```
+$ docker tag my-audiofingerprint-poc:latest 1234567890.dkr.ecr.us-east-1.amazonaws.com/my-audiofingerprint-poc:latest
+$ aws ecr get-login-password | docker login --username AWS --password-stdin 1234567890.dkr.ecr.us-east-1.amazonaws.com
+$ docker push 1234567890.dkr.ecr.us-east-1.amazonaws.com/my-audiofingerprint-poc:latest
+```
+
+On Lambda, you'll need to define `MPLCONFIGDIR` with `/tmp/` value, as matplotlib needs to have write permission to run calculations in parallel.
+
+With 2048MB of memory and with an input of 5s sound it takes around 2.5s to process it inside Lambda function.
 
 ## Thanks to
+- conference [PaceMaker: BackEnd-2016 conference](http://www.pacemaker.in.ua/BackEnd-2016/about)
+- slides are on [slideshare.net/rodomansky/ok-shazam-la-lalalaa](http://www.slideshare.net/rodomansky/ok-shazam-la-lalalaa)
 - [How does Shazam work](http://coding-geek.com/how-shazam-works/)
 - [Audio fingerprinting and recognition in Python](https://github.com/worldveil/dejavu) - thanks for fingerprinting login via pynum
 - [Audio Fingerprinting with Python and Numpy](http://willdrevo.com/fingerprinting-and-audio-recognition-with-python/)

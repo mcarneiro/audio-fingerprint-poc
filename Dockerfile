@@ -5,8 +5,7 @@ RUN pip install -r /requirements.txt
 
 ADD db /var/task/db
 ADD libs /var/task/libs
-# ADD ffmpeg /var/task/ffmpeg
-COPY app.py recognize_from_file.py config.json /var/task/
 COPY ffmpeg/bin /usr/bin
+COPY app.py recognize_from_file.py config.json /var/task/
 
 CMD [ "app.handler" ]

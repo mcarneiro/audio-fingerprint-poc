@@ -19,3 +19,8 @@ input-audios
 python
 venv
 package.zip
+
+node_modules
+.npmrc
+**/www/*.css
+**/www/*.js

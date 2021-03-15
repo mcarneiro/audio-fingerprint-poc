@@ -24,7 +24,7 @@ Where `test-request.json` will have at least:
 
 ```
 {
-  "body": "[mp3 base64]"
+  "body": {"data": "[mp3 base64]"}
 }
 ```
 
@@ -32,7 +32,7 @@ You can an example response with base64 of a file by doing:
 
 ```
 $ echo "{
-  \"body\": \"$(base64 audio.mp3 | sed ':a;N;$!ba;s/\n//g')\"
+  \"body\": {"data": \"$(base64 audio.mp3 | sed ':a;N;$!ba;s/\n//g')\"}
 }" > test-request.json
 ```
 
@@ -95,6 +95,14 @@ $ docker push 1234567890.dkr.ecr.us-east-1.amazonaws.com/my-audiofingerprint-poc
 On Lambda, you'll need to define `MPLCONFIGDIR` with `/tmp/` value, as matplotlib needs to have write permission to run calculations in parallel.
 
 With 2048MB of memory and with an input of 5s sound it takes around 2.5s to process it inside Lambda function.
+
+To create the page on the front-end, just go to `front-end/` and run `npm install`. Create a `.npmrc` file with:
+
+```
+audio-fingerprint-poc:api=[your api gateway url]
+```
+
+To test it locally, specially on iPhone, you'll need to use a certificate. You can just send `server.crt` to [your iphone and trust this profile](https://blog.httpwatch.com/2013/12/12/five-tips-for-using-self-signed-ssl-certificates-with-ios/). Or you can [create your own certificate following these steps](https://blog.httpwatch.com/2013/12/12/five-tips-for-using-self-signed-ssl-certificates-with-ios/).
 
 ## Thanks to
 - conference [PaceMaker: BackEnd-2016 conference](http://www.pacemaker.in.ua/BackEnd-2016/about)

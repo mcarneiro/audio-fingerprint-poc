@@ -1,0 +1,88 @@
+html, body
+  margin 0
+  padding 0
+  background #984DED
+  min-height 100%
+  display flex
+  justify-content center
+  align-items center
+  font-family sans-serif
+
+.main-wrapper
+  max-width 500px
+  margin 0 auto
+  word-wrap break-word
+
+.btn-mic
+  background none
+  margin 0 auto
+  border none
+  display block
+  font-size 0
+  color #fff
+  padding 0
+  position relative
+
+  &:focus
+    outline none
+
+  > img
+    display block
+    width 200px
+
+  > svg
+    opacity 0
+    width 226px
+    height 226px
+    top 0
+    left 0
+    position absolute
+    top -13px
+    left -13px
+
+.-disabled
+  > img
+    opacity 0.2
+
+  > svg
+    opacity 1
+
+#feedback
+  word-wrap break-word
+  position absolute
+  bottom 0
+  left 0
+  right 0
+  background #ffffff
+  padding 20px
+  margin 30px
+  border-radius 8px
+  opacity 0
+
+  &.-active
+    opacity 1
+
+.disclaimer-wrapper > p
+  font-size 18px
+
+.link-list
+  margin 0
+  padding 0
+  display flex
+  flex-wrap wrap
+  margin -5px -5px 10px
+
+  > li
+    list-style-type none
+    padding 0
+    margin 5px
+
+  a
+    text-decoration none
+    display inline-block
+    padding 5px 10px
+    background #ffffff
+    border-radius 4px
+
+    &:hover
+      opacity 0.5

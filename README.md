@@ -105,6 +105,7 @@ audio-fingerprint-poc:api=[your api gateway url]
 To test it locally, specially on iPhone, you'll need to use a certificate. You can just send `server.crt` to [your iphone and trust this profile](https://blog.httpwatch.com/2013/12/12/five-tips-for-using-self-signed-ssl-certificates-with-ios/). Or you can [create your own certificate following these steps](https://blog.httpwatch.com/2013/12/12/five-tips-for-using-self-signed-ssl-certificates-with-ios/).
 
 ## Thanks to
+- This POC was created based on this repo https://github.com/itspoma/audio-fingerprint-identifying-python and some parts of this https://github.com/vmizg/audio-fingerprint-identifying-python
 - conference [PaceMaker: BackEnd-2016 conference](http://www.pacemaker.in.ua/BackEnd-2016/about)
 - slides are on [slideshare.net/rodomansky/ok-shazam-la-lalalaa](http://www.slideshare.net/rodomansky/ok-shazam-la-lalalaa)
 - [How does Shazam work](http://coding-geek.com/how-shazam-works/)

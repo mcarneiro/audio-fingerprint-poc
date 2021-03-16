@@ -7,6 +7,8 @@ from recognize_from_file import run_recognition
 def handler(event, context):
   fh = open('/tmp/audio.ogg', 'wb')
   fh.write(base64.b64decode(json.loads(event['body'])['data']))
+  # When testing locally, data will come as dict, instead of json
+  # fh.write(base64.b64decode(event['data']))
   fh.close()
 
   AudioSegment.from_file('/tmp/audio.ogg').export('/tmp/audio.mp3',

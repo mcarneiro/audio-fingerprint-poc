@@ -24,3 +24,4 @@ node_modules
 .npmrc
 **/www/*.css
 **/www/*.js
+test-request.json

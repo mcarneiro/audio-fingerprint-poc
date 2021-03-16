@@ -2,17 +2,17 @@
 
 ## How to set up this POC
 
-* `docker-compose build`
-* `docker-compose run --rm --entrypoint bash dev`
+* `$ docker-compose build`
+* `$ docker-compose run --rm --entrypoint bash dev`
 
-For the first run, this command will create an empty database:
-* `$ python reset-database.py`
+Inside de container, for the first run, this command will create an empty database:
+* `bash-4.2# python reset-database.py`
 
 Add mp3 files to `./mp3` folder and run the command below to make it available for comparison:
-* `$ python collect-fingerprints-of-songs.py`
+* `bash-4.2# python collect-fingerprints-of-songs.py`
 
 Get a recorded input sound to compare and run:
-* `$ python recognize_from_file.py [file.mp3]`
+* `bash-4.2# python recognize_from_file.py [file.mp3]`
 
 To test it locally, just run `docker-compose up` to make the lambda local server running and run:
 

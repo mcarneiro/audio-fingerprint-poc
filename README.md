@@ -14,6 +14,9 @@ Add mp3 files to `./mp3` folder and run the command below to make it available f
 Get a recorded input sound to compare and run:
 * `bash-4.2# python recognize_from_file.py [file.mp3]`
 
+To remove an audio from the database:
+* `bash-4.2# python remove_by_bame.py '[file.mp3]'`
+
 To test it locally, just run `docker-compose up` to make the lambda local server running and run:
 
 ```
